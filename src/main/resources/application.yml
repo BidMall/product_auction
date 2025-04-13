@@ -1,9 +1,9 @@
 spring:
   application:
-    name: product_auction
+    name: ${PROJECT_NAME}
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/product_auction_db
+    url: ${PRODUCT_AUCTION_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
