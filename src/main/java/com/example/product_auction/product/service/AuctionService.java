@@ -102,4 +102,32 @@ public class AuctionService {
 			throw new RuntimeException("경매 삭제에 실패했습니다.", e);
 		}
 	}
+
+	/**
+	 * // 경매 상태에 따른 조회 (isClosed: true 또는 false)
+	 * @param isClosed
+	 * @return
+	 */
+	public List<Auction> getAuctionsByClosedStatus(boolean isClosed) {
+		try {
+			return auctionRepository.findByIsClosed(isClosed);
+		} catch (Exception e) {
+			log.error("경매 상태 조회 중 오류 발생", e);
+			throw new RuntimeException("경매 상태 조회 실패", e);
+		}
+	}
+
+	/**
+	 * // 특정 상품 ID에 해당하는 경매 조회
+	 * @param productId
+	 * @return
+	 */
+	public List<Auction> getAuctionsByProductId(Long productId) {
+		try {
+			return auctionRepository.findByProductId(productId);
+		} catch (Exception e) {
+			log.error("상품 ID로 경매 조회 중 오류 발생", e);
+			throw new RuntimeException("상품 경매 조회 실패", e);
+		}
+	}
 }
