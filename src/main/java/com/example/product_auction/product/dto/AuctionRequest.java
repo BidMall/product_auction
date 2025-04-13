@@ -1,5 +1,7 @@
 package com.example.product_auction.product.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,12 +12,10 @@ public class AuctionRequest {
 	/** 상품 ID **/
 	private Long productId;
 
-	/** 상품 이름 **/
-	private String productName;
+	/** 경매 시작 시간 (옵션) **/
+	private LocalDateTime startTime;
 
-	/** 상품 설명 **/
-	private String productDescription;
+	/** 경매 종료 시간 (옵션) **/
+	private LocalDateTime endTime;
 
-	/** 상품 가격 **/
-	private Long startPrice;
 }
