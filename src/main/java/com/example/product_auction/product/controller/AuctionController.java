@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.product_auction.product.domain.Auction;
 import com.example.product_auction.product.dto.AuctionRequest;
-import com.example.product_auction.product.service.AuctionService;
+import com.example.product_auction.product.service.AuctionServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuctionController {
 
-	private final AuctionService auctionService;
+	private final AuctionServiceImpl auctionService;
 
 	/** 단일 경매 조회 **/
 	@GetMapping("/{id}")
