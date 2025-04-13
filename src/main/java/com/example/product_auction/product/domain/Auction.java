@@ -50,6 +50,7 @@ public class Auction {
 	protected void onCreate() {
 		this.highestBid = 0L;
 		this.isClosed = false;
+		this.isDeleted = false;
 	}
 
 	/** 논리 삭제를 위한 메서드 **/
