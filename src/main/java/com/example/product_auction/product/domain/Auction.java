@@ -7,12 +7,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Auction {
 
 	@Id
@@ -38,9 +42,18 @@ public class Auction {
 	private Boolean isClosed;
 
 	/** 생성 시 기본값 설정 **/
+
+	/** 삭제 여부 **/
+	private Boolean isDeleted;
+
 	@PrePersist
 	protected void onCreate() {
 		this.highestBid = 0L;
 		this.isClosed = false;
+	}
+
+	/** 논리 삭제를 위한 메서드 **/
+	public void deleteAuction() {
+		this.isDeleted = true;
 	}
 }
