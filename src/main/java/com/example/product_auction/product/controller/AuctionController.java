@@ -15,73 +15,137 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.product_auction.product.domain.Auction;
 import com.example.product_auction.product.dto.AuctionRequest;
 import com.example.product_auction.product.dto.AuctionResponse;
-import com.example.product_auction.product.service.AuctionServiceImpl;
+import com.example.product_auction.product.service.AuctionService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/auctions")
 @RequiredArgsConstructor
+@Slf4j
 public class AuctionController {
 
-	private final AuctionServiceImpl auctionService;
+	private final AuctionService auctionService;
 
-	/** 단일 경매 조회 **/
+	/**
+	 * 단일 경매 조회
+	 * @param id
+	 * @return
+	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<AuctionResponse> getAuction(@PathVariable Long id) {
-		AuctionResponse auctionById = auctionService.getAuctionById(id);
-		return ResponseEntity.ok(auctionById);
+	public ResponseEntity<AuctionResponse> getAuction(
+		@PathVariable Long id) {
+		try {
+			AuctionResponse auctionById = auctionService.getAuctionById(id);
+			log.info("단일 경매 조회={}", auctionById);
+			return ResponseEntity.ok(auctionById);
+		} catch (Exception e) {
+			log.error("단일 경매 실패={}", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
-	/** 전체 경매 목록 조회 **/
+	/**
+	 * 전체 경매 목록 조회
+	 * @return
+	 */
 	@GetMapping
-	public ResponseEntity<List<Auction>> getAllAuctions() {
-		List<Auction> auctions = auctionService.getAllAuction();
-		return ResponseEntity.ok(auctions);
+	public ResponseEntity<List<AuctionResponse>> getAllAuctions() {
+		try {
+			List<AuctionResponse> auctions = auctionService.getAllAuction();
+			log.info("경매 목록 조회={}", auctions);
+			return ResponseEntity.ok(auctions);
+		} catch (Exception e) {
+			log.error("경매 생성 실패={}", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
-	/** 경매 생성 **/
+	/**
+	 * 경매생성
+	 * @param request
+	 * @return
+	 */
 	@PostMapping
-	public ResponseEntity<Auction> createAuction(@RequestBody AuctionRequest request) {
-		Auction createdAuction = auctionService.createAuction(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdAuction);
+	public ResponseEntity<AuctionResponse> createAuction(
+		@RequestBody AuctionRequest request) {
+		try {
+			AuctionResponse auction = auctionService.createAuction(request);
+			log.info("경매 성공 성공={}", auction);
+			return ResponseEntity.status(HttpStatus.CREATED).body(auction);
+		} catch (Exception e) {
+			log.error("경매 생성 실패={}", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
-	/** 경매 수정 **/
+	/**
+	 * 경매 수정
+	 * @param id
+	 * @param request
+	 * @return
+	 */
 	@PutMapping("/{id}")
-	public ResponseEntity<Auction> updateAuction(@PathVariable Long id, @RequestBody AuctionRequest request) {
-		Auction updatedAuction = auctionService.updateAuction(id, request);
-		return ResponseEntity.ok(updatedAuction);
+	public ResponseEntity<AuctionResponse> updateAuction(
+		@PathVariable Long id,
+		@RequestBody AuctionRequest request) {
+		try {
+			AuctionResponse auctionResponse = auctionService.updateAuction(id, request);
+			log.info("경매 수정 성공={}", auctionResponse);
+			return ResponseEntity.status(HttpStatus.CREATED).body(auctionResponse);
+		} catch (Exception e) {
+			log.error("경매 수정 실패={}", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 
-	/** 경매 논리 삭제 **/
+	/**
+	 * 경매 논리 삭제
+	 * @param id
+	 * @return
+	 */
 	@PatchMapping("/{id}/delete")
-	public ResponseEntity<Void> deleteAuction(@PathVariable Long id) {
-		auctionService.deleteAuction(id);
-		return ResponseEntity.noContent().build();
+	public ResponseEntity<Void> deleteAuctionLogic(@PathVariable Long id) {
+		try {
+			auctionService.deleteAuction(id);
+			log.info("경매 논리 삭제 성공: " + id);
+			return ResponseEntity.noContent().build();
+		} catch (Exception e) {
+			log.error("경매 논리 삭제 실패", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	/** 경매 영구 삭제 **/
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteAuctionPermanently(@PathVariable Long id) {
-		auctionService.deleteAuctionPermanently(id);
-		return ResponseEntity.noContent().build();
+		try {
+			auctionService.deleteAuctionPermanently(id);
+			log.info("경매 영구 삭제 성공: " + id);
+			return ResponseEntity.noContent().build();
+		} catch (Exception e) {
+			log.error("경매 영구 삭제 실패", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
-	/** 경매 상태(isClosed)에 따른 조회 **/
+	/**
+	 * 경매 상태(isClosed)에 따른 조회
+	 * @param isClosed
+	 * @return
+	 */
 	@GetMapping("/status")
-	public ResponseEntity<List<Auction>> getAuctionsByStatus(@RequestParam boolean isClosed) {
-		List<Auction> auctions = auctionService.getAuctionsByClosedStatus(isClosed);
-		return ResponseEntity.ok(auctions);
-	}
-
-	/** 특정 상품 ID에 해당하는 경매 목록 조회 **/
-	@GetMapping("/product/{productId}")
-	public ResponseEntity<List<Auction>> getAuctionsByProductId(@PathVariable Long productId) {
-		List<Auction> auctions = auctionService.getAuctionsByProductId(productId);
-		return ResponseEntity.ok(auctions);
+	public ResponseEntity<List<AuctionResponse>> getAuctionsByStatus(@RequestParam boolean isClosed) {
+		try {
+			List<AuctionResponse> auctions = auctionService.getAuctionsByClosedStatus(isClosed);
+			log.info("경매 상태 조회 성공, isClosed: {}", isClosed);
+			return ResponseEntity.ok(auctions);
+		} catch (Exception e) {
+			log.error("경매 상태 조회 실패, isClosed: {}", isClosed, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }
