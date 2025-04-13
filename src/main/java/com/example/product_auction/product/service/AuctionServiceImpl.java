@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.product_auction.product.domain.Auction;
 import com.example.product_auction.product.dto.AuctionRequest;
+import com.example.product_auction.product.dto.AuctionResponse;
 import com.example.product_auction.product.repository.AuctionRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,15 +23,27 @@ public class AuctionServiceImpl implements AuctionService {
 
 	private final AuctionRepository auctionRepository;
 
-	/** 단일조회 **/
-	@Override
-	public Auction getAuctionById(Long id) {
+	/**
+	 * ID조회
+	 * @param id
+	 * @return
+	 */
+	public AuctionResponse getAuctionById(Long id) {
 		Optional<Auction> auctionOptional = auctionRepository.findById(id);
-		if (auctionOptional.isPresent()) {
-			return auctionOptional.get();
-		} else {
-			throw new RuntimeException("Auction now found Id" + id);
-		}
+
+		Auction auction = auctionOptional.orElseThrow(() ->
+			new EntityNotFoundException("Auction not found with id: " + id));
+		return AuctionResponse.builder()
+			.id(auction.getId())
+			.productId(auction.getProductId())
+			.productName("상품 이름")
+			.productDescription("상품 설명")
+			.startTime(auction.getStartTime())
+			.endTime(auction.getEndTime())
+			.highestBid(auction.getHighestBid())
+			.winnerId(auction.getWinnerId())
+			.isClosed(auction.getEndTime().isBefore(LocalDateTime.now()))
+			.build();
 	}
 
 	//전체조회

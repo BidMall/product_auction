@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.product_auction.product.domain.Auction;
 import com.example.product_auction.product.dto.AuctionRequest;
+import com.example.product_auction.product.dto.AuctionResponse;
 import com.example.product_auction.product.service.AuctionServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,9 @@ public class AuctionController {
 
 	/** 단일 경매 조회 **/
 	@GetMapping("/{id}")
-	public ResponseEntity<Auction> getAuction(@PathVariable Long id) {
-		Auction auction = auctionService.getAuctionById(id);
-		return ResponseEntity.ok(auction);
+	public ResponseEntity<AuctionResponse> getAuction(@PathVariable Long id) {
+		AuctionResponse auctionById = auctionService.getAuctionById(id);
+		return ResponseEntity.ok(auctionById);
 	}
 
 	/** 전체 경매 목록 조회 **/

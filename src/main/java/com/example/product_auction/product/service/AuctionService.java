@@ -4,10 +4,11 @@ import java.util.List;
 
 import com.example.product_auction.product.domain.Auction;
 import com.example.product_auction.product.dto.AuctionRequest;
+import com.example.product_auction.product.dto.AuctionResponse;
 
 public interface AuctionService {
 
-	Auction getAuctionById(Long id);
+	AuctionResponse getAuctionById(Long id);
 
 	List<Auction> getAllAuction();
 
