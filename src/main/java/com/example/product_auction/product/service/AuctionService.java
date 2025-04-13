@@ -2,9 +2,12 @@ package com.example.product_auction.product.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.example.product_auction.product.dto.AuctionRequest;
 import com.example.product_auction.product.dto.AuctionResponse;
 
+@Service
 public interface AuctionService {
 
 	/**
