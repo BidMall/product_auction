@@ -12,10 +12,10 @@ import com.example.product_auction.product.dto.AuctionRequest;
 import com.example.product_auction.product.repository.AuctionRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 public class AuctionService {
 
@@ -37,52 +37,69 @@ public class AuctionService {
 		return auctionAll;
 	}
 
-	// 경매등록
 	@Transactional
 	public Auction createAuction(AuctionRequest auctionRequest) {
-		// DTO 데이터를 엔티티로 변환
-		Auction auction = Auction.builder()
-			.productId(auctionRequest.getProductId())
-			.startTime(LocalDateTime.now())
-			.endTime(LocalDateTime.now().plusDays(7))
-			.highestBid(0L) // 초기 입찰가는 0으로 설정
-			.isClosed(false)
-			.build();
-		return auctionRepository.save(auction);
+		try {
+			Auction auction = Auction.builder()
+				.productId(auctionRequest.getProductId())
+				.startTime(LocalDateTime.now())
+				.endTime(LocalDateTime.now().plusDays(7))
+				.highestBid(0L)
+				.isClosed(false)
+				.build();
+			return auctionRepository.save(auction);
+		} catch (Exception e) {
+			log.error("Failed to create auction", e);
+			throw new RuntimeException("경매 생성 실패", e); // 예외를 던져서 컨트롤러에서 처리할 수 있게
+		}
 	}
 
-	//경매수정
 	@Transactional
 	public Auction updateAuction(Long auctionId, AuctionRequest auctionRequest) {
-		Auction auction = auctionRepository.findById(auctionId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 경매가 존재하지 않습니다."));
-		Auction updatedAuction = auction.toBuilder()
-			.productId(auctionRequest.getProductId())
-			.startTime(LocalDateTime.now())
-			.endTime(LocalDateTime.now().plusDays(7))
-			.highestBid(0L)
-			.isClosed(false)
-			.build();
-		return auctionRepository.save(updatedAuction);
+		try {
+			Optional<Auction> auction = auctionRepository.findById(auctionId);
+			if (auction.isEmpty()) {
+				throw new IllegalArgumentException("경매를 찾을 수 없습니다.");
+			}
+			Auction updatedAuction = auction.get().toBuilder()
+				.productId(auctionRequest.getProductId())
+				.startTime(LocalDateTime.now())
+				.endTime(LocalDateTime.now().plusDays(7))
+				.highestBid(0L) // 초기 입찰가는 0으로 설정
+				.isClosed(false)
+				.build();
+			return auctionRepository.save(updatedAuction);
+		} catch (Exception e) {
+			log.error("경매 수정 중 오류 발생", e);
+			throw new RuntimeException("경매 수정에 실패했습니다.", e);
+		}
 	}
 
-	// 경매 삭제 (논리 삭제)
 	@Transactional
 	public void deleteAuction(Long auctionId) {
-		// 경매 조회
-		Auction auction = auctionRepository.findById(auctionId)
-			.orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+		try {
+			Optional<Auction> auctionOptional = auctionRepository.findById(auctionId);
+			if (auctionOptional.isEmpty()) {
+				throw new IllegalArgumentException("경매를 찾을 수 없습니다.");
+			}
+			Auction auction = auctionOptional.get();
 
-		// 경매 삭제 처리 (논리 삭제)
-		auction.deleteAuction();
+			auction.deleteAuction();
 
-		// 변경된 경매 정보 저장
-		auctionRepository.save(auction);
+			auctionRepository.save(auction);
+		} catch (Exception e) {
+			log.error("경매 삭제 중 오류 발생", e);
+			throw new RuntimeException("경매 삭제에 실패했습니다.", e); // 적절한 예외를 던짐
+		}
 	}
 
-	// 경매 삭제 (영구 삭제)
 	@Transactional
 	public void deleteAuctionPermanently(Long auctionId) {
-		auctionRepository.deleteById(auctionId);
+		try {
+			auctionRepository.deleteById(auctionId);
+		} catch (Exception e) {
+			log.error("경매 삭제 중 오류 발생", e);
+			throw new RuntimeException("경매 삭제에 실패했습니다.", e);
+		}
 	}
 }
