@@ -23,27 +23,12 @@ public class Auction {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/** 상품 ID (FK) **/
 	private Long productId;
-
-	/** 경매 시작 시간 **/
 	private LocalDateTime startTime;
-
-	/** 경매 종료 시간 **/
 	private LocalDateTime endTime;
-
-	/** 현재 최고 입찰가 **/
 	private Long highestBid;
-
-	/** 낙찰자 ID (User 서비스 참조) **/
 	private Long winnerId;
-
-	/** 경매 종료 여부 **/
 	private Boolean isClosed;
-
-	/** 생성 시 기본값 설정 **/
-
-	/** 삭제 여부 **/
 	private Boolean isDeleted;
 
 	@PrePersist
@@ -53,8 +38,62 @@ public class Auction {
 		this.isDeleted = false;
 	}
 
-	/** 논리 삭제를 위한 메서드 **/
 	public void deleteAuction() {
 		this.isDeleted = true;
+	}
+
+	// Request DTO (경매 생성 요청)
+	@Getter
+	@Builder
+	public static class AuctionRequest {
+		private Long productId;
+		private LocalDateTime startTime;
+		private LocalDateTime endTime;
+	}
+
+	// Response DTO (경매 조회 응답)
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class AuctionResponse {
+		private Long id;
+		private Long productId;
+		private LocalDateTime startTime;
+		private LocalDateTime endTime;
+		private Long highestBid;
+		private Long winnerId;
+		private Boolean isClosed;
+		private Boolean isDeleted;
+	}
+
+	// Simple Response DTO (경매 처리 결과 응답)
+	@Getter
+	@AllArgsConstructor
+	@Builder
+	public static class SimpleAuctionResponse {
+		private String message;
+		private int returnCode;
+	}
+
+	// Update Request DTO (경매 상태 변경 요청)
+	@Getter
+	@Builder
+	public static class AuctionUpdateRequest {
+		private Long id;
+		private Long highestBid;
+		private Long winnerId;
+		private Boolean isClosed;
+	}
+
+	// Auction Info Response DTO (경매 목록 조회 응답)
+	@Getter
+	@AllArgsConstructor
+	@Builder
+	public static class AuctionInfoResponse {
+		private Long id;
+		private Long productId;
+		private Long highestBid;
+		private Boolean isClosed;
 	}
 }
