@@ -3,12 +3,14 @@ package com.example.product_auction.product.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.product_auction.product.domain.Auction;
+import com.example.product_auction.product.domain.Product;
 import com.example.product_auction.product.repository.AuctionRepository;
+import com.example.product_auction.product.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,31 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuctionServiceImpl implements AuctionService {
 
 	private final AuctionRepository auctionRepository;
-
-	// 진행중, 종료와 관계없이 전체 경매 조회
-
-	/**
-	 * 진행중인 경매 조회
-	 * @return
-	 */
-	@Override
-	public List<Auction.OngoingAuctionResponse> findByOnGoingAuctions() {
-		List<Auction> auctions = auctionRepository.findByIsClosedFalseAndIsDeletedFalse();
-
-		return auctions.stream()
-			.map(auction -> Auction.OngoingAuctionResponse.builder()
-				.id(auction.getId())
-				.productId(auction.getProductId())
-				.startTime(auction.getStartTime())
-				.endTime(auction.getEndTime())
-				.highestBid(auction.getHighestBid())
-				.isDeleted(auction.getIsDeleted())
-				.productName(auction.getProduct().getName())
-				.isClosed(auction.getIsClosed())
-				.build()
-			)
-			.collect(Collectors.toList());
-	}
+	private final ProductRepository productRepository;
 
 	/**
 	 * 전체경매 조회 (진행중, 완료된 경매) 상관없이 모두 조회
@@ -61,8 +39,8 @@ public class AuctionServiceImpl implements AuctionService {
 					.productId(auction.getProductId())
 					.startTime(auction.getStartTime())
 					.endTime(auction.getEndTime())
+					.status(auction.getStatus())
 					.highestBid(auction.getHighestBid())
-					.isDeleted(auction.getIsDeleted())
 					.build();
 			auctions.add(response);
 		}
@@ -70,52 +48,87 @@ public class AuctionServiceImpl implements AuctionService {
 	}
 
 	/**
-	 * 종료된 경매 조회
-	 */
-	@Override
-	public List<Auction.ClosedAuctionResponse> findEndByAuctions() {
-		List<Auction> closedAuctions = auctionRepository.findByIsClosedTrue();
-		ArrayList<Auction.ClosedAuctionResponse> auctions = new ArrayList<>();
-
-		for (Auction.ClosedAuctionResponse auction : auctions) {
-			Auction.ClosedAuctionResponse closedAuctionResponse = Auction.ClosedAuctionResponse.builder()
-				.id(auction.getId())
-				.productId(auction.getProductId())
-				.startTime(auction.getStartTime())
-				.endTime(auction.getEndTime())
-				.highestBid(auction.getHighestBid())
-				.isDeleted(auction.getIsDeleted())
-				.build();
-			auctions.add(closedAuctionResponse);
-		}
-		return auctions;
-	}
-
-	/**
-	 * 경매 등록
-	 * @param request
+	 * 진행중인 경매 조회
 	 * @return
 	 */
 	@Override
-	public Auction.RegisterAuctionResponse registerAuction(Auction.RegisterAuctionRequest request) {
+	public List<Auction.OngoingAuctionResponse> getOngoingAuctions() {
+		List<Auction> ongoingAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.ONGOING);
+		List<Auction.OngoingAuctionResponse> responses = new ArrayList<>();
 
-		//경매 객체 생성
+		for (Auction auction : ongoingAuctions) {
+			Auction.OngoingAuctionResponse response = Auction.OngoingAuctionResponse.builder()
+				.id(auction.getId())
+				.productId(auction.getProduct().getId())
+				.startTime(auction.getStartTime())
+				.endTime(auction.getEndTime())
+				.highestBid(auction.getHighestBid())
+				.status(auction.getStatus())
+				.productName(auction.getProduct().getName())
+				.build();
+			responses.add(response);
+		}
+
+		return responses;
+	}
+
+	/**
+	 * 종료된 경매 조회
+	 * @return
+	 */
+	@Override
+	public List<Auction.ClosedAuctionResponse> getClosedAuctions() {
+		List<Auction> closedAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.CLOSED);
+		List<Auction.ClosedAuctionResponse> responses = new ArrayList<>();
+
+		for (Auction auction : closedAuctions) {
+			Auction.ClosedAuctionResponse response = Auction.ClosedAuctionResponse.builder()
+				.id(auction.getId())
+				.productId(auction.getProduct().getId())
+				.startTime(auction.getStartTime())
+				.endTime(auction.getEndTime())
+				.highestBid(auction.getHighestBid())
+				.status(auction.getStatus())
+				.productName(auction.getProduct().getName())
+				.winnerId(auction.getWinnerId())
+				.build();
+			responses.add(response);
+		}
+
+		return responses;
+	}
+
+	@Override
+	@Transactional
+	public Auction.RegisterAuctionResponse registerAuction(Auction.RegisterAuctionRequest request) {
+		Product product = request.getProduct();
+
+		if (product == null) {
+			throw new IllegalArgumentException("상품 정보가 없습니다.");
+		}
+
+		// 상품 등록
+		Product savedProduct = productRepository.save(product);
+
+		// 경매 생성 (바로 진행 상태로 설정)
 		Auction auction = Auction.builder()
-			.productId(request.getProductId())
+			.product(savedProduct)
 			.description(request.getDescription())
 			.startTime(request.getStartTime())
 			.endTime(request.getEndTime())
+			.status(Auction.AuctionStatus.ONGOING)  // 바로 진행 상태로 설정
+			.highestBid(0L)
 			.build();
 
 		Auction savedAuction = auctionRepository.save(auction);
 
-		// 응답 생성
 		return Auction.RegisterAuctionResponse.builder()
 			.auctionId(savedAuction.getId())
-			.productId(savedAuction.getProductId())
+			.product(savedProduct)
+			.description(savedAuction.getDescription())
 			.startTime(savedAuction.getStartTime())
 			.endTime(savedAuction.getEndTime())
-			.message("경매가 성공적으로 등록되었습니다.")
+			.status(savedAuction.getStatus())
 			.build();
 	}
 
@@ -124,24 +137,22 @@ public class AuctionServiceImpl implements AuctionService {
 	 * @param request
 	 * @return
 	 */
+	/**
+	 * 경매 삭제
+	 */
+	@Transactional
 	public Auction.DeleteAuctionResponse deleteAuction(Auction.DeleteAuctionRequest request) {
-		try {
-			Optional<Auction> auctionOpt = auctionRepository.findById(request.getAuctionId());
-
-			if (auctionOpt.isPresent()) {
-				Auction auction = auctionOpt.get();
-
-				auction.deleteAuction();
-				auctionRepository.save(auction);
-
-				return Auction.DeleteAuctionResponse.builder()
-					.auctionId(auction.getId())
-					.build();
-			} else {
-				throw new IllegalArgumentException("해당 경매를 찾을 수 없습니다.");
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("경매 삭제 처리 중 오류가 발생했습니다.", e);
+		Optional<Auction> auctionOpt = auctionRepository.findById(request.getAuctionId());
+		if (auctionOpt.isPresent()) {
+			Auction auction = auctionOpt.get();
+			auctionRepository.delete(auction); // 진짜 삭제
+			log.info("경매 삭제 완료 auctionId = {}", auction.getId());
+			return Auction.DeleteAuctionResponse.builder()
+				.auctionId(auction.getId())
+				.build();
+		} else {
+			log.warn("경매 삭제 실패: auctionId = {} (존재하지 않음)", request.getAuctionId());
+			throw new IllegalArgumentException("해당 경매를 찾을 수 없습니다.");
 		}
 	}
 }
