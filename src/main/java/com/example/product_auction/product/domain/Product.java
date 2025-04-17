@@ -1,6 +1,7 @@
 package com.example.product_auction.product.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +49,9 @@ public class Product {
 
 	/** 상품 생성 시간 **/
 	private LocalDateTime createdAt;
+
+	@OneToMany(mappedBy = "product") // Auction에서의 "product" 필드에 의해 매핑됨
+	private List<Auction> auctions; // 해당 상품과 연관된 모든 경매 목록
 
 	@PrePersist
 	protected void onCreate() {
