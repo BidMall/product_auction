@@ -2,58 +2,24 @@ package com.example.product_auction.product.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import com.example.product_auction.product.domain.Auction;
 
-import com.example.product_auction.product.dto.AuctionRequest;
-import com.example.product_auction.product.dto.AuctionResponse;
-
-@Service
 public interface AuctionService {
 
 	/**
-	 * 단일 경매 상세 조회
-	 * @param id
+	 * 진행중인 경매를 조회
 	 * @return
 	 */
-	AuctionResponse getAuctionById(Long id);
+	List<Auction.OngoingAuctionResponse> findByOnGoingAuctions();
 
 	/**
-	 * 전체 경매 목록 (요약 정보 리스트)
+	 * 모든 경매를 조회
 	 * @return
 	 */
-	List<AuctionResponse> getAllAuction();
+	List<Auction.AuctionBaseResponse> findAllByAuctions();
 
 	/**
-	 * 경매 생성
-	 * @param auctionRequest
-	 * @return
+	 * 종료된 경매를 조회
 	 */
-	AuctionResponse createAuction(AuctionRequest auctionRequest);
-
-	/**
-	 * 경매 수정
-	 * @param auctionId
-	 * @param auctionRequest
-	 * @return
-	 */
-	AuctionResponse updateAuction(Long auctionId, AuctionRequest auctionRequest);
-
-	/**
-	 * 논리 삭제
-	 * @param auctionId
-	 */
-	void deleteAuction(Long auctionId);
-
-	/**
-	 * 영구 삭제
-	 * @param auctionId
-	 */
-	void deleteAuctionPermanently(Long auctionId);
-
-	/**
-	 * 종료 여부에 따른 경매 조회 (요약 정보 리스트)
-	 * @param isClosed
-	 * @return
-	 */
-	List<AuctionResponse> getAuctionsByClosedStatus(boolean isClosed);
+	List<Auction.ClosedAuctionResponse> findEndByAuctions();
 }
