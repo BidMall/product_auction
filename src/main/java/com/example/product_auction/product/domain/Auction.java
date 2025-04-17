@@ -36,6 +36,9 @@ public class Auction {
 	/** 경매 종료 시간 **/
 	private LocalDateTime endTime;
 
+	/** 상품 설명 **/
+	private String description; // 상품 설명 추가
+
 	/** 최고 입찰가 **/
 	private Long highestBid;
 	private Long winnerId;
@@ -99,5 +102,34 @@ public class Auction {
 		private String productName;
 		private Boolean isClosed;
 		private Long winnerId;
+	}
+
+	/**
+	 * 경매 등록 request, response 만들어야함
+	 * 경매 등록은 어떤 Request?
+	 * 그리고 등록되면 어떤 Response?
+	 */
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RegisterAuctionRequest {
+		private Long productId;
+		private String description;
+		private LocalDateTime startTime;
+		private LocalDateTime endTime;
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RegisterAuctionResponse {
+		private Long auctionId;
+		private Long productId;
+		private String description;
+		private LocalDateTime startTime;
+		private LocalDateTime endTime;
+		private String message;
 	}
 }
