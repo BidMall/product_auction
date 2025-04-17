@@ -89,5 +89,33 @@ public class AuctionServiceImpl implements AuctionService {
 		}
 		return auctions;
 	}
+
+	/**
+	 * 경매 등록
+	 * @param request
+	 * @return
+	 */
+	@Override
+	public Auction.RegisterAuctionResponse registerAuction(Auction.RegisterAuctionRequest request) {
+
+		//경매 객체 생성
+		Auction auction = Auction.builder()
+			.productId(request.getProductId())
+			.description(request.getDescription())
+			.startTime(request.getStartTime())
+			.endTime(request.getEndTime())
+			.build();
+
+		Auction savedAuction = auctionRepository.save(auction);
+
+		// 응답 생성
+		return Auction.RegisterAuctionResponse.builder()
+			.auctionId(savedAuction.getId())
+			.productId(savedAuction.getProductId())
+			.startTime(savedAuction.getStartTime())
+			.endTime(savedAuction.getEndTime())
+			.message("경매가 성공적으로 등록되었습니다.")
+			.build();
+	}
 }
 
