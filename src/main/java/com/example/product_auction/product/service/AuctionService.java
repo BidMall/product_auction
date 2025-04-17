@@ -22,4 +22,11 @@ public interface AuctionService {
 	 * 종료된 경매를 조회
 	 */
 	List<Auction.ClosedAuctionResponse> findEndByAuctions();
+
+	/**
+	 * 경매 등록
+	 * @param request
+	 * @return
+	 */
+	Auction.RegisterAuctionResponse registerAuction(Auction.RegisterAuctionRequest request);
 }
