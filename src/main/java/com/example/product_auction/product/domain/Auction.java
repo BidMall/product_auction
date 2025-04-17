@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -58,7 +59,7 @@ public class Auction {
 
 	/** 상품 연관관계 **/
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_id", insertable = false, updatable = false)
+	@JoinColumn(name = "product_id", nullable = false)
 	private Product product;
 
 	// ===== DTO 정의 =====
@@ -98,16 +99,17 @@ public class Auction {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RegisterAuctionRequest {
-		private Product product;  // 상품 객체를 직접 받음
-		private String description;  // 경매 설명
-		private LocalDateTime startTime;  // 경매 시작 시간
-		private LocalDateTime endTime;  // 경매 종료 시간
+		private Product product;
+		private String description;
+		private LocalDateTime startTime;
+		private LocalDateTime endTime;
 	}
 
 	@Getter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+	@ToString
 	public static class RegisterAuctionResponse {
 		private Long auctionId;
 		private Product product;
@@ -115,6 +117,7 @@ public class Auction {
 		private LocalDateTime startTime;
 		private LocalDateTime endTime;
 		private AuctionStatus status;
+
 	}
 
 	@Getter

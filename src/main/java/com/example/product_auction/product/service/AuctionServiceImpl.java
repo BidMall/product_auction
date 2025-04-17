@@ -53,7 +53,7 @@ public class AuctionServiceImpl implements AuctionService {
 	 */
 	@Override
 	public List<Auction.OngoingAuctionResponse> getOngoingAuctions() {
-		List<Auction> ongoingAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.ONGOING);
+		List<Auction> ongoingAuctions = auctionRepository.findByStatusWithProduct(Auction.AuctionStatus.ONGOING);
 		List<Auction.OngoingAuctionResponse> responses = new ArrayList<>();
 
 		for (Auction auction : ongoingAuctions) {
@@ -78,7 +78,7 @@ public class AuctionServiceImpl implements AuctionService {
 	 */
 	@Override
 	public List<Auction.ClosedAuctionResponse> getClosedAuctions() {
-		List<Auction> closedAuctions = auctionRepository.findByStatus(Auction.AuctionStatus.CLOSED);
+		List<Auction> closedAuctions = auctionRepository.findByStatusWithProduct(Auction.AuctionStatus.CLOSED);
 		List<Auction.ClosedAuctionResponse> responses = new ArrayList<>();
 
 		for (Auction auction : closedAuctions) {
@@ -107,20 +107,36 @@ public class AuctionServiceImpl implements AuctionService {
 			throw new IllegalArgumentException("상품 정보가 없습니다.");
 		}
 
+		// 입력값 확인
+		log.info("경매 등록 요청 - product: {}", product);
+		log.info("상품 이름: {}", product.getName());
+		log.info("상품 시작 가격: {}", product.getStartPrice());
+		log.info("경매 설명: {}", request.getDescription());
+		log.info("경매 시작 시간: {}", request.getStartTime());
+		log.info("경매 종료 시간: {}", request.getEndTime());
+
 		// 상품 등록
 		Product savedProduct = productRepository.save(product);
+		productRepository.flush();  // 강제 반영 (선택적)
 
-		// 경매 생성 (바로 진행 상태로 설정)
+		log.info("저장된 Product ID: {}", savedProduct.getId());
+		log.info("저장된 상품 이름: {}", savedProduct.getName());
+
+		// 경매 생성
 		Auction auction = Auction.builder()
 			.product(savedProduct)
 			.description(request.getDescription())
 			.startTime(request.getStartTime())
 			.endTime(request.getEndTime())
-			.status(Auction.AuctionStatus.ONGOING)  // 바로 진행 상태로 설정
+			.status(Auction.AuctionStatus.ONGOING)
 			.highestBid(0L)
 			.build();
 
 		Auction savedAuction = auctionRepository.save(auction);
+
+		log.info("저장된 Auction ID: {}", savedAuction.getId());
+		log.info("저장된 경매 상태: {}", savedAuction.getStatus());
+		log.info("저장된 경매 product_id: {}", savedAuction.getProduct().getId());
 
 		return Auction.RegisterAuctionResponse.builder()
 			.auctionId(savedAuction.getId())
