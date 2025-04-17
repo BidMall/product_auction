@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: ${PRODUCT_NAME}
+
+  datasource:
+    url: ${DATA_SOURCE_URL}  # 개발 DB URL
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 환경에서는 ddl-auto: update 설정
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    show-sql: true
