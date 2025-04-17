@@ -2,6 +2,7 @@ package com.example.product_auction.product.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -116,6 +117,32 @@ public class AuctionServiceImpl implements AuctionService {
 			.endTime(savedAuction.getEndTime())
 			.message("경매가 성공적으로 등록되었습니다.")
 			.build();
+	}
+
+	/**
+	 * 경매 삭제
+	 * @param request
+	 * @return
+	 */
+	public Auction.DeleteAuctionResponse deleteAuction(Auction.DeleteAuctionRequest request) {
+		try {
+			Optional<Auction> auctionOpt = auctionRepository.findById(request.getAuctionId());
+
+			if (auctionOpt.isPresent()) {
+				Auction auction = auctionOpt.get();
+
+				auction.deleteAuction();
+				auctionRepository.save(auction);
+
+				return Auction.DeleteAuctionResponse.builder()
+					.auctionId(auction.getId())
+					.build();
+			} else {
+				throw new IllegalArgumentException("해당 경매를 찾을 수 없습니다.");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("경매 삭제 처리 중 오류가 발생했습니다.", e);
+		}
 	}
 }
 
