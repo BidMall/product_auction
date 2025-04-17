@@ -23,4 +23,11 @@ public interface AuctionController {
 	 */
 	ResponseEntity<List<Auction.ClosedAuctionResponse>> getClosedAuctions();
 
+	/**
+	 * 경매 등록
+	 * @param request 경매 등록 요청
+	 * @return 등록된 경매 응답
+	 */
+	ResponseEntity<Auction.RegisterAuctionResponse> registerAuction(Auction.RegisterAuctionRequest request);
+
 }

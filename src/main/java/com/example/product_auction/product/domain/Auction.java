@@ -3,12 +3,14 @@ package com.example.product_auction.product.domain;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,13 +24,18 @@ import lombok.experimental.SuperBuilder;
 @Builder(toBuilder = true)
 public class Auction {
 
+	// ===== 경매 상태 enum =====
+	public enum AuctionStatus {
+		ONGOING,   // 경매 진행 중
+		CLOSED,     // 경매 종료
+		PENDING,
+		CANCELED
+	}
+
 	/** 경매 ID **/
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	/** 상품ID **/
-	private Long productId;
 
 	/** 경매 시작 시간 **/
 	private LocalDateTime startTime;
@@ -37,30 +44,24 @@ public class Auction {
 	private LocalDateTime endTime;
 
 	/** 상품 설명 **/
-	private String description; // 상품 설명 추가
+	private String description;
 
 	/** 최고 입찰가 **/
 	private Long highestBid;
+
+	/** 낙찰자 ID **/
 	private Long winnerId;
 
-	/** 경매 종료 여부 **/
-	private Boolean isClosed;
+	/** 경매 상태 **/
+	@Enumerated(EnumType.STRING)
+	private AuctionStatus status;
 
-	/** 경매 삭제 여부 **/
-	private Boolean isDeleted;
-
-	@ManyToOne
-	@JoinColumn(name = "product_id")
+	/** 상품 연관관계 **/
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_id", insertable = false, updatable = false)
 	private Product product;
 
-	@PrePersist
-	protected void onCreate() {
-		this.highestBid = 0L;
-		this.isClosed = false;
-		this.isDeleted = false;
-	}
-
-	// ===== DTO 시작 =====
+	// ===== DTO 정의 =====
 
 	@Getter
 	@NoArgsConstructor
@@ -72,46 +73,35 @@ public class Auction {
 		private LocalDateTime startTime;
 		private LocalDateTime endTime;
 		private Long highestBid;
-		private Boolean isDeleted;
+		private AuctionStatus status;
 	}
 
-	/**
-	 * 진행중인 경매 조회용 DTO
-	 */
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@SuperBuilder
 	public static class OngoingAuctionResponse extends AuctionBaseResponse {
 		private String productName;
-		private Boolean isClosed;
 	}
 
-	/**
-	 * 완료된 경매 조회용 DTO
-	 */
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@SuperBuilder
 	public static class ClosedAuctionResponse extends AuctionBaseResponse {
 		private String productName;
-		private Boolean isClosed;
 		private Long winnerId;
 	}
 
-	/**
-	 * 경매 등록 request, response
-	 */
 	@Getter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RegisterAuctionRequest {
-		private Long productId;
-		private String description;
-		private LocalDateTime startTime;
-		private LocalDateTime endTime;
+		private Product product;  // 상품 객체를 직접 받음
+		private String description;  // 경매 설명
+		private LocalDateTime startTime;  // 경매 시작 시간
+		private LocalDateTime endTime;  // 경매 종료 시간
 	}
 
 	@Getter
@@ -120,23 +110,19 @@ public class Auction {
 	@AllArgsConstructor
 	public static class RegisterAuctionResponse {
 		private Long auctionId;
-		private Long productId;
+		private Product product;
 		private String description;
 		private LocalDateTime startTime;
 		private LocalDateTime endTime;
-		private String message;
+		private AuctionStatus status;
 	}
-
-	/**
-	 * 경매삭제 Response,request
-	 */
 
 	@Getter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class DeleteAuctionRequest {
-		private Long auctionId;  // 삭제할 경매의 ID
+		private Long auctionId;
 	}
 
 	@Getter
@@ -144,6 +130,6 @@ public class Auction {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class DeleteAuctionResponse {
-		private Long auctionId;  // 삭제된 경매의 ID
+		private Long auctionId;
 	}
 }
