@@ -6,11 +6,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
@@ -19,17 +22,33 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class Auction {
 
+	/** 경매 ID **/
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	/** 상품ID **/
 	private Long productId;
+
+	/** 경매 시작 시간 **/
 	private LocalDateTime startTime;
+
+	/** 경매 종료 시간 **/
 	private LocalDateTime endTime;
+
+	/** 최고 입찰가 **/
 	private Long highestBid;
 	private Long winnerId;
+
+	/** 경매 종료 여부 **/
 	private Boolean isClosed;
+
+	/** 경매 삭제 여부 **/
 	private Boolean isDeleted;
+
+	@ManyToOne
+	@JoinColumn(name = "product_id")
+	private Product product;
 
 	@PrePersist
 	protected void onCreate() {
@@ -42,58 +61,43 @@ public class Auction {
 		this.isDeleted = true;
 	}
 
-	// Request DTO (경매 생성 요청)
-	@Getter
-	@Builder
-	public static class AuctionRequest {
-		private Long productId;
-		private LocalDateTime startTime;
-		private LocalDateTime endTime;
-	}
+	// ===== DTO 시작 =====
 
-	// Response DTO (경매 조회 응답)
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	@Builder
-	public static class AuctionResponse {
+	@SuperBuilder
+	public static class AuctionBaseResponse {
 		private Long id;
 		private Long productId;
 		private LocalDateTime startTime;
 		private LocalDateTime endTime;
 		private Long highestBid;
-		private Long winnerId;
-		private Boolean isClosed;
 		private Boolean isDeleted;
 	}
 
-	// Simple Response DTO (경매 처리 결과 응답)
+	/**
+	 * 진행중인 경매 조회용 DTO
+	 */
 	@Getter
+	@NoArgsConstructor
 	@AllArgsConstructor
-	@Builder
-	public static class SimpleAuctionResponse {
-		private String message;
-		private int returnCode;
+	@SuperBuilder
+	public static class OngoingAuctionResponse extends AuctionBaseResponse {
+		private String productName;
+		private Boolean isClosed;
 	}
 
-	// Update Request DTO (경매 상태 변경 요청)
+	/**
+	 * 완료된 경매 조회용 DTO
+	 */
 	@Getter
-	@Builder
-	public static class AuctionUpdateRequest {
-		private Long id;
-		private Long highestBid;
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@SuperBuilder
+	public static class ClosedAuctionResponse extends AuctionBaseResponse {
+		private String productName;
+		private Boolean isClosed;
 		private Long winnerId;
-		private Boolean isClosed;
-	}
-
-	// Auction Info Response DTO (경매 목록 조회 응답)
-	@Getter
-	@AllArgsConstructor
-	@Builder
-	public static class AuctionInfoResponse {
-		private Long id;
-		private Long productId;
-		private Long highestBid;
-		private Boolean isClosed;
 	}
 }
