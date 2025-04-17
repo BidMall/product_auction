@@ -60,10 +60,6 @@ public class Auction {
 		this.isDeleted = false;
 	}
 
-	public void deleteAuction() {
-		this.isDeleted = true;
-	}
-
 	// ===== DTO 시작 =====
 
 	@Getter
@@ -105,9 +101,7 @@ public class Auction {
 	}
 
 	/**
-	 * 경매 등록 request, response 만들어야함
-	 * 경매 등록은 어떤 Request?
-	 * 그리고 등록되면 어떤 Response?
+	 * 경매 등록 request, response
 	 */
 	@Getter
 	@Builder
@@ -131,5 +125,25 @@ public class Auction {
 		private LocalDateTime startTime;
 		private LocalDateTime endTime;
 		private String message;
+	}
+
+	/**
+	 * 경매삭제 Response,request
+	 */
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DeleteAuctionRequest {
+		private Long auctionId;  // 삭제할 경매의 ID
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DeleteAuctionResponse {
+		private Long auctionId;  // 삭제된 경매의 ID
 	}
 }
