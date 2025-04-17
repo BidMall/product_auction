@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,6 +86,26 @@ public class AuctionControllerImpl implements AuctionController {
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			log.info("경매 등록 실패={}", e.getMessage());
+			return ResponseEntity.status(500).body(null);
+		}
+	}
+
+	/**
+	 * 경매 삭제
+	 * @param request
+	 * @return
+	 */
+	@Override
+	@DeleteMapping
+	public ResponseEntity<Auction.DeleteAuctionResponse> deleteAuction(
+		@RequestBody Auction.DeleteAuctionRequest request) {
+		try {
+			// auctionId를 받아 삭제 요청 처리
+			Auction.DeleteAuctionResponse deleteAuctionResponse = auctionService.deleteAuction(request);
+			log.info("경매 삭제 성공={}", deleteAuctionResponse);
+			return ResponseEntity.ok(deleteAuctionResponse);
+		} catch (Exception e) {
+			log.error("경매 삭제 실패={}", e.getMessage(), e);
 			return ResponseEntity.status(500).body(null);
 		}
 	}
