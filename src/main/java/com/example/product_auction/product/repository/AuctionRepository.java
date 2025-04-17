@@ -10,7 +10,6 @@ import com.example.product_auction.product.domain.Auction;
 @Repository
 public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
-	List<Auction> findByIsClosed(Boolean isClosed);
-
-	List<Auction> findByProductId(Long productId);
+	// 진행 중 및 종료된 경매 확인
+	List<Auction> findByStatus(Auction.AuctionStatus status);
 }
